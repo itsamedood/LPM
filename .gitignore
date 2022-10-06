@@ -1,0 +1,4 @@
+/node_modules
+# 👇 For now ;)
+/scripts
+*.DS_Store
