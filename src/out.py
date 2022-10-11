@@ -25,6 +25,7 @@ class TextStyle:
     UNDERLINED  = "\033[4m"
     BLINK       = "\033[5m"
 
+
 class TextColor:
     """Changes the font color. Ranges from `30` to `37`."""
 
@@ -36,6 +37,7 @@ class TextColor:
     PURPLE  = "\033[0;35m"
     CYAN    = "\033[0;36m"
     WHITE   = "\033[0;37m"
+
 
 class BGColor:
     """Changes the color of the background. Ranges from `40` to `47`"""
@@ -49,6 +51,7 @@ class BGColor:
     CYAN    = "\033[0;46m"
     WHITE   = "\033[0;47m"
 
+
 class Special:
     """Preset color codes for quicker usage."""
 
@@ -58,6 +61,7 @@ class Special:
     NOTE    = "\033[1;47m"
     RESET   = "\033[0;0;0m"
 
+
 class Ansi:
     """Class for using ANSI color codes."""
 
@@ -66,16 +70,13 @@ class Ansi:
     bg      = BGColor()
     special = Special()
 
+
 class LpmError(BaseException):
     """Represents an error from LPM."""
 
-    def __init__(self, message: str, code: int) -> None:
-        print(f"lpm: {Ansi.special.ERROR}error{Ansi.special.RESET}: {message}.")
-        return exit(code)
+    def __init__(self, message: str, code: int) -> None: print(f"lpm: {Ansi.special.ERROR}error{Ansi.special.RESET}: {message}."); return exit(code)
 
 
-def success(message: str) -> None:
-    return print(f"{Ansi.special.SUCCESS}{message}{Ansi.special.RESET}")
-
-def warn(message: str) -> None:
-    return print(f"{Ansi.special.WARNING}{message}{Ansi.special.RESET}")
+def success(message: str) -> None: return print(f"{Ansi.special.SUCCESS}{message}{Ansi.special.RESET}")
+def warn(message: str) -> None: return print(f"{Ansi.special.WARNING}{message}{Ansi.special.RESET}")
+def result(color: str, left: str, output: str) -> None: return print(f"{color}{left}{Ansi.special.RESET}: {Ansi.text.YELLOW}{output}{Ansi.special.RESET}")

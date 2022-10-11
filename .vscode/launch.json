@@ -7,6 +7,9 @@
 			"pythonArgs": [
 				"-B"
 			],
+			"args": [
+				"new"
+			],
 			"program": "src/main.py",
 			"console": "integratedTerminal",
 			"justMyCode": true

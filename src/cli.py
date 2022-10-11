@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
-from os import getenv, path
+from os import getenv
+from random import randint
 from data.dataManager import DataManager
-from out import LpmError
+from out import Ansi, LpmError, result, warn
 
 
 class Cli:
@@ -30,16 +31,33 @@ class Cli:
         "Commands:",
         "╭─ new",
         "⏐  get",
-        "⏐  list",
         "⏐  edit",
-        "╰─ rm",
+        "⏐  list",
+        "⏐  rm",
+        "⏐  wipe",
+        "⏐  export",
+        "╰─ gen",
         "Flags:",
         "╭─ --v",
         "╰─ --h",
     ])
 
-    def __init__(self, args: list[str]) -> None:
-        self.args = args
+    def __init__(self, args: list[str]) -> None: self.args = args
+
+    def gen_password(self, _length: str | None) -> str:
+        if _length is None: raise LpmError("missing argument 'length'", 1)
+        length: int | None = None
+
+        while _length.isdigit():  # All because of what I swear must be a Python3.10+ bug...
+            try: length = int(_length); break
+            except: continue
+
+        if length is None: raise LpmError("password length must be an integer", 1)
+        elif length >= 1000: warn("This may take longer than usual...")
+
+        pw, chars = "", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]};:'\",<.>/?|\\"
+        for _ in range(length): pw += chars[randint(0, len(chars)-1)]
+        return pw
 
     def process_args(self) -> None:
         command = self.args[1] if len(self.args) > 1 else None
@@ -47,42 +65,27 @@ class Cli:
 
         if flag is not None and len(flag) > 2:
             match flag[2]:
-                case "v" | "version":
-                    print("v0.0.1")
-
-                case "h" | "help":
-                    print(self.help)
-
-                case _:
-                    raise LpmError(f"invalid flag: '{flag}'", 1)
+                case "v" | "version": print("v0.0.1")
+                case "h" | "help": print(self.help)
+                case _: raise LpmError(f"unknown flag: '{flag}'", 1)
 
         else:
             HOME = getenv("HOME")
             PATH = f"{HOME}/.lpm/lpm.bin" if HOME is not None else None
+            param = self.args[2] if len(self.args) > 2 else None
 
-            if PATH is None:
-                raise LpmError("could not find home path", 1)
+            if PATH is None: raise LpmError("could not find home path", 1)
 
-            # No need to check if the path exists, because DataManager.__init__ checks.
-            with open(PATH, "a") as lpmBin:
-                match command:
-                    case "new":
-                        self.dm.new(lpmBin, self.dm.get_new_data())
+            match command:
+                case "new": self.dm.new(self.dm.get_new_data())
+                case "get": self.dm.get(param)
+                case "edit": self.dm.edit(param)
+                case "list": self.dm.list()
+                case "rm": self.dm.rm(param)
+                case "wipe": self.dm.wipe()
+                case "export": self.dm.export(bool(param))
 
-                    case "get":
-                        raise LpmError("not implemented yet", 0)
+                case "gen": result(Ansi.text.GREEN, "Random password", self.gen_password(self.args[2] if len(self.args) > 2 else None))
 
-                    case "edit":
-                        raise LpmError("not implemented yet", 0)
-
-                    case "list":
-                        raise LpmError("not implemented yet", 0)
-
-                    case "rm":
-                        raise LpmError("not implemented yet", 0)
-
-                    case None:
-                        print(self.help)
-
-                    case cmd:
-                        raise LpmError(f"invalid command: '{cmd}'", 0)
+                case None: print(self.help)
+                case cmd: raise LpmError(f"unknown command: '{cmd}'", 0)

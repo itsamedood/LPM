@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
-from random import randint
+from cryptography.fernet import Fernet
 
 
 class Key:
@@ -23,14 +23,5 @@ class Key:
 
     as_bytes: bytes
 
-    def __init__(self, __bytes: bytes | None) -> None:
-            self.as_bytes = self.gen() if __bytes is None else __bytes
-
-    def gen(self):
-        """Generates a random key."""
-
-        chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+{[}];:'\"|\\<>,./?"
-        key = ""
-
-        for _ in range(randint(10, 50)): key += chars[randint(0, len(chars)-1)]
-        return bytes(key + "\n", encoding="ascii")
+    def __init__(self, __bytes: bytes | None) -> None: self.as_bytes = self.gen() if __bytes is None else __bytes
+    def gen(self): return Fernet.generate_key() + b"\n"

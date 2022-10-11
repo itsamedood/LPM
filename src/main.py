@@ -15,10 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
+from sys import argv
 from cli import Cli
 
-
-if __name__ == "__main__":
-    cli = Cli(sys.argv)
-    cli.process_args()
+if __name__ == "__main__": cli = Cli(argv); cli.process_args()
