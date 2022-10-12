@@ -18,7 +18,7 @@
 from os import getenv
 from random import randint
 from data.dataManager import DataManager
-from out import Ansi, LpmError, result, warn
+from out import Ansi, LpmError, success, warn
 
 
 class Cli:
@@ -85,7 +85,7 @@ class Cli:
                 case "wipe": self.dm.wipe()
                 case "export": self.dm.export(bool(param))
 
-                case "gen": result(Ansi.text.GREEN, "Random password", self.gen_password(self.args[2] if len(self.args) > 2 else None))
+                case "gen": success("Random password: " + self.gen_password(self.args[2] if len(self.args) > 2 else None))
 
                 case None: print(self.help)
                 case cmd: raise LpmError(f"unknown command: '{cmd}'", 0)

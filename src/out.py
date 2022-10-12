@@ -58,7 +58,6 @@ class Special:
     SUCCESS = "\033[1;32m"
     WARNING = "\033[1;33m"
     ERROR   = "\033[1;31m"
-    NOTE    = "\033[1;47m"
     RESET   = "\033[0;0;0m"
 
 
@@ -77,6 +76,6 @@ class LpmError(BaseException):
     def __init__(self, message: str, code: int) -> None: print(f"lpm: {Ansi.special.ERROR}error{Ansi.special.RESET}: {message}."); return exit(code)
 
 
-def success(message: str) -> None: return print(f"{Ansi.special.SUCCESS}{message}{Ansi.special.RESET}")
-def warn(message: str) -> None: return print(f"{Ansi.special.WARNING}{message}{Ansi.special.RESET}")
-def result(color: str, left: str, output: str) -> None: return print(f"{color}{left}{Ansi.special.RESET}: {Ansi.text.YELLOW}{output}{Ansi.special.RESET}")
+def success(message: str) -> None: return print(f"lpm: {Ansi.special.SUCCESS}success{Ansi.special.RESET}: {message}.")
+def warn(message: str) -> None: return print(f"lpm: {Ansi.special.WARNING}warn{Ansi.special.RESET}: {message}.")
+def notify(message: str) -> None: return print(f"lpm: {Ansi.style.LIGHT}note{Ansi.special.RESET}: {message}.")

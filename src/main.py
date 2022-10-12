@@ -18,4 +18,4 @@
 from sys import argv
 from cli import Cli
 
-if __name__ == "__main__": cli = Cli(argv); cli.process_args()
+if __name__ == "__main__": Cli(argv).process_args()

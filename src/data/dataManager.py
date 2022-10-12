@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
-from os import getenv, path
+from os import getenv, system, mkdir, path
 from sys import platform
-from out import Ansi, LpmError, success
+from out import Ansi, LpmError, notify, success
 from getpass import GetPassWarning, getpass
 from cryptography.fernet import Fernet
 from data.key import Key
@@ -37,36 +37,40 @@ class DataManager:
 
     fernet: Fernet
 
-    HOME = getenv("HOME") if platform == "linux" or "darwin" else f'{getenv("HOMEDRIVE")}{getenv("HOMEPATH")}'
-    BINPATH = f"{HOME}/.lpm/lpm.bin" if HOME is not None else None  # Path to file where all data is stored.
-    KEYPATH = f"{HOME}/.lpm/.key" if HOME is not None else None  # Path to where your encryption key is stored.
+    HOME    = getenv("HOME") if platform == "linux" or "darwin" else f'{getenv("HOMEDRIVE")}{getenv("HOMEPATH")}'
+    BASPATH = f"{HOME}/.lpm" if HOME is not None else None
+    BINPATH = f"{BASPATH}/lpm.bin" if HOME is not None else None  # Path to file where all data is stored.
+    KEYPATH = f"{BASPATH}/.key" if HOME is not None else None  # Path to where your encryption key is stored.
 
     def __init__(self) -> None:
         # Probably won't ever happen.
-        if self.KEYPATH is None or self.BINPATH is None: raise LpmError("could not find home path", 1)
+        if self.BASPATH is None: raise LpmError("could not find home path", 1)
+        if not path.exists(self.BASPATH): mkdir(self.BASPATH)
 
         # Verifying `.key` exists, and that it contains a string.
-        if path.exists(self.KEYPATH):
-            with open(self.KEYPATH, "rb") as rdotkey:  # For reading.
-                lines = rdotkey.readlines()
+        if not path.exists(self.KEYPATH): system(f"echo > {self.KEYPATH}"); notify(f"'{self.KEYPATH}' created")
 
-                if len(lines) < 1:
-                    with open(self.KEYPATH, "wb") as wdotkey:  # For writing.
-                        key = Key(None).gen()
-                        carets = ""
-                        for _ in key: carets += "^"
+        with open(self.KEYPATH, "rb") as rdotkey:  # For reading.
+            lines = rdotkey.readlines()
 
-                        wdotkey.write(key + bytes(carets[:-1], encoding="ascii") + b" DO NOT CHANGE!!\n")
-                    lines = rdotkey.readlines()  # Re-read lines.
+            if len(lines) < 1:
+                with open(self.KEYPATH, "wb") as wdotkey:  # For writing.
+                    key = Key(None).gen()
+                    carets = ""
+                    for _ in key: carets += "^"
 
-                self.key = Key(lines[0][:-1])  # To get avoid encoding `\n`.
-        else: raise LpmError(f"'{self.KEYPATH}' was not found, so it was created. restart the program.", 1)
+                    wdotkey.write(key + bytes(carets[:-1], encoding="ascii") + b" DO NOT CHANGE!!\n")
+                lines = rdotkey.readlines()  # Re-read lines.
+
+            self.key = Key(lines[0][:-1])  # To get avoid encoding `\n`.
 
         # Verifying `lpm.bin` exists and has not been tampered with.
         if path.exists(self.BINPATH): pass
             # Get current hash (if it exists).
             # Hash data - the current hash.
             # Compare digests.
+
+        else: system(f"echo > {self.BINPATH}"); notify(f"'{self.BINPATH}' created")
 
         self.fernet = Fernet(self.key.as_bytes, None)
 
@@ -106,7 +110,7 @@ class DataManager:
         if self.BINPATH is None: raise LpmError("could not find home path", 1)
 
         with open(self.BINPATH, "ab") as lpmBin: lpmBin.write(self.encrypt(bytes(f"{data.formatted}\n", encoding="ascii")))
-        success(f"Successfully saved '{data.as_tuple[0]}'!")
+        success(f"'{data.as_tuple[0]}' was saved")
 
     def get(self, _parent: str | None) -> None:
         if self.BINPATH is None: raise LpmError("could not find home path", 1)
