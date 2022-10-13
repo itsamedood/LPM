@@ -77,15 +77,15 @@ class Cli:
             if PATH is None: raise LpmError("could not find home path", 1)
 
             match command:
-                case "new": self.dm.new(self.dm.get_new_data())
-                case "get": self.dm.get(param)
+                case "new": self.dm.new(self.dm.get_data())
+                case "get": self.dm.get(param).print_out()
                 case "edit": self.dm.edit(param)
                 case "list": self.dm.list()
                 case "rm": self.dm.rm(param)
                 case "wipe": self.dm.wipe()
                 case "export": self.dm.export(bool(param))
 
-                case "gen": success("Random password: " + self.gen_password(self.args[2] if len(self.args) > 2 else None))
+                case "gen": success("Random password: " + self.gen_password(param))
 
                 case None: print(self.help)
                 case cmd: raise LpmError(f"unknown command: '{cmd}'", 0)

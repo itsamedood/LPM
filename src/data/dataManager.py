@@ -44,7 +44,7 @@ class DataManager:
 
     def __init__(self) -> None:
         # Probably won't ever happen.
-        if self.BASPATH is None: raise LpmError("could not find home path", 1)
+        if self.BASPATH is None or self.BINPATH is None or self.KEYPATH is None: raise LpmError("could not find home path", 1)
         if not path.exists(self.BASPATH): mkdir(self.BASPATH)
 
         # Verifying `.key` exists, and that it contains a string.
@@ -74,7 +74,7 @@ class DataManager:
 
         self.fernet = Fernet(self.key.as_bytes, None)
 
-    def get_new_data(self) -> Data:
+    def get_data(self) -> Data:
         """Gets data from the user to store."""
 
         try:
@@ -109,10 +109,10 @@ class DataManager:
 
         if self.BINPATH is None: raise LpmError("could not find home path", 1)
 
-        with open(self.BINPATH, "ab") as lpmBin: lpmBin.write(self.encrypt(bytes(f"{data.formatted}\n", encoding="ascii")))
+        with open(self.BINPATH, "ab") as lpmBin: lpmBin.write(self.encrypt(bytes(f"{data.formatted}", encoding="ascii")) + b"\n")
         success(f"'{data.as_tuple[0]}' was saved")
 
-    def get(self, _parent: str | None) -> None:
+    def get(self, _parent: str | None) -> Data:
         if self.BINPATH is None: raise LpmError("could not find home path", 1)
         if _parent is None: raise LpmError("missing argument 'parent'", 1)
 
@@ -120,12 +120,28 @@ class DataManager:
             lines = [self.decrypt(eline) for eline in lpmBin.readlines()]
 
             for line in lines:
-                line_split = str(line)[2:-3].split("::")
-                if line_split[0] == _parent: return Data(line_split[0], line_split[1], line_split[2], line_split[3]).print_out()
+                line_split = str(line)[2:-1].split("::")
+                if line_split[0] == _parent: return Data(line_split[0], line_split[1], line_split[2], line_split[3])
 
             raise LpmError(f"'{_parent}' does not exist", 1)
 
-    def edit(self, _parent: str | None) -> None: ...
+    def edit(self, _parent: str | None) -> None:
+        if self.BINPATH is None: raise LpmError("could not find home path", 1)
+        if _parent is None: raise LpmError("missing argument 'parent'", 1)
+
+        self.get(_parent)  # Verifies this data exists.
+        data = self.get_data()
+
+        with open(self.BINPATH, "rb") as rlpmBin:
+            _lines = [self.decrypt(l) for l in rlpmBin.readlines()]
+            lines: list[bytes] = []
+
+            for line in _lines:
+                if str(line)[2:-1].split("::")[0] != _parent: lines.append(self.encrypt(line))
+                else: lines.append(self.encrypt(bytes(data.formatted, encoding="ascii")))
+
+            with open(self.BINPATH, "wb") as wlpmBin: [wlpmBin.write(line + b"\n") for line in lines]
+            success(f"edited '{_parent}'" if _parent == data.parent else f"edited '{_parent}' (now '{data.parent}')")
 
     def list(self) -> None:
         if self.BINPATH is None: raise LpmError("could not find home path", 1)
@@ -135,6 +151,37 @@ class DataManager:
             if len(parents) > 0: [print(f"{Ansi.style.LIGHT}•{Ansi.special.RESET} {p}") for p in parents]
             else: raise LpmError("no data found", 1)
 
-    def rm(self, _parent: str | None) -> None: ...
-    def wipe(self) -> None: ...
-    def export(self, _decrypted: bool | None) -> None: ...
+    def rm(self, _parent: str | None) -> None:
+        if self.BINPATH is None: raise LpmError("could not find home path", 1)
+        if _parent is None: raise LpmError("missing argument 'parent'", 1)
+
+        self.get(_parent)  # Verifies this data exists.
+
+        with open(self.BINPATH, "rb") as rlpmBin:
+            lines = [self.decrypt(eline) for eline in rlpmBin.readlines()]
+            filtered_lines: list[bytes] = []
+
+            for line in lines:
+                if str(line)[2:-1].split("::")[0] != _parent: filtered_lines.append(self.encrypt(line))
+
+            with open(self.BINPATH, "wb") as wlpmBin: [wlpmBin.write(fline + b"\n") for fline in filtered_lines]
+            success(f"'{_parent}' was removed")
+
+    def wipe(self) -> None:
+        if self.BINPATH is None or self.KEYPATH is None: raise LpmError("could not find home path", 1)
+
+        with open(self.BINPATH, "rb") as lpmBin:
+            if len(lpmBin.readlines()) > 0:
+                with open(self.KEYPATH, "wb") as wdotkey: wdotkey.write(b"")
+                with open(self.BINPATH, "wb") as wlpmBin: wlpmBin.write(b""); success("wiped all data and key")
+            else: raise LpmError("no data found", 1)
+
+    def export(self, _decrypted: bool | None) -> None:  # Will get around to using `_decrypted` eventually.
+        if self.BINPATH is None: raise LpmError("could not find home path", 1)
+        if _decrypted is None: _decrypted = False
+
+        PATH = f"{self.HOME}/Desktop/export.txt"
+        if path.exists(PATH): raise LpmError("data already exported", 1)
+
+        with open(self.BINPATH, "r") as lpmBin:
+            with open(PATH, "w") as txt: txt.write(lpmBin.read()); success(f"exported all data to '{PATH}'")
