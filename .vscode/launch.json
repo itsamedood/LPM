@@ -1,18 +1,18 @@
 {
-	"configurations": [
-		{
-			"name": "main.py",
-			"type": "python",
-			"request": "launch",
-			"pythonArgs": [
-				"-B"
-			],
-			"args": [
-				"new"
-			],
-			"program": "src/main.py",
-			"console": "integratedTerminal",
-			"justMyCode": true
-		}
-	]
+    "configurations": [
+        {
+            "name": "main.py",
+            "type": "python",
+            "request": "launch",
+            "pythonArgs": [
+                "-B"
+            ],
+            "args": [
+                "new"
+            ],
+            "program": "src/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
 }

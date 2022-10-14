@@ -18,7 +18,7 @@
 from os import getenv
 from random import randint
 from data.dataManager import DataManager
-from out import Ansi, LpmError, success, warn
+from out import LpmError, success, warn
 
 
 class Cli:
@@ -55,7 +55,7 @@ class Cli:
         if length is None: raise LpmError("password length must be an integer", 1)
         elif length >= 1000: warn("This may take longer than usual...")
 
-        pw, chars = "", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]};:'\",<.>/?|\\"
+        pw, chars = "", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]};:'\",<.>/?|"
         for _ in range(length): pw += chars[randint(0, len(chars)-1)]
         return pw
 
@@ -85,7 +85,7 @@ class Cli:
                 case "wipe": self.dm.wipe()
                 case "export": self.dm.export(bool(param))
 
-                case "gen": success("Random password: " + self.gen_password(param))
+                case "gen": success(self.gen_password(param))
 
                 case None: print(self.help)
                 case cmd: raise LpmError(f"unknown command: '{cmd}'", 0)

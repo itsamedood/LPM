@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
+
+from sys import exit
+
+
 class TextStyle:
     """Changes the font style. Ranges from `0` to `5`."""
 

@@ -47,7 +47,7 @@ class DataManager:
         if self.BASPATH is None or self.BINPATH is None or self.KEYPATH is None: raise LpmError("could not find home path", 1)
         if not path.exists(self.BASPATH): mkdir(self.BASPATH)
 
-        # Verifying `.key` exists, and that it contains a string.
+        # Verifying `.key` exists, and that it contains a key.
         if not path.exists(self.KEYPATH): system(f"echo > {self.KEYPATH}"); notify(f"'{self.KEYPATH}' created")
 
         with open(self.KEYPATH, "rb") as rdotkey:  # For reading.
@@ -64,13 +64,8 @@ class DataManager:
 
             self.key = Key(lines[0][:-1])  # To get avoid encoding `\n`.
 
-        # Verifying `lpm.bin` exists and has not been tampered with.
-        if path.exists(self.BINPATH): pass
-            # Get current hash (if it exists).
-            # Hash data - the current hash.
-            # Compare digests.
-
-        else: system(f"echo > {self.BINPATH}"); notify(f"'{self.BINPATH}' created")
+        # Verifying `lpm.bin` exists.
+        if not path.exists(self.BINPATH): system(f"echo > {self.BINPATH}"); notify(f"'{self.BINPATH}' created")
 
         self.fernet = Fernet(self.key.as_bytes, None)
 
@@ -87,19 +82,6 @@ class DataManager:
 
         except (EOFError, KeyboardInterrupt): print(""); raise LpmError("cancelled", 1)
         except GetPassWarning: raise LpmError("failed to disable echo", 1)
-
-    def hash(self, input: bytearray) -> int:
-        """Implementation of the CRC-32 hashing algorithm."""
-
-        num = 0xFFFFFFFF
-
-        for i in range(len(input)):
-            temp = (num ^ input[i]) & 0xFF
-
-            for _ in range(0, 8): temp = (temp >> 1) ^ (-(temp & 1) & 0xEDB88320)
-            num = (num >> 8) ^ temp
-
-        return num ^ 0xFFFFFFFF
 
     def encrypt(self, data: bytes) -> bytes: return self.fernet.encrypt(data)
     def decrypt(self, data: bytes) -> bytes: return self.fernet.decrypt(data)
