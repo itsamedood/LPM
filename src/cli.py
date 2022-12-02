@@ -33,6 +33,7 @@ class Cli:
         "⏐  get <parent>",
         "⏐  edit <parent>",
         "⏐  list",
+        "⏐  search <parent>",
         "⏐  rm <parent>",
         "⏐  wipe",
         "⏐  export [decrypted]",
@@ -84,6 +85,7 @@ class Cli:
                 case "get": self.dm.get(param).print_out()
                 case "edit": self.dm.edit(param)
                 case "list": self.dm.list()
+                case "search": self.dm.search(param)
                 case "rm": self.dm.rm(param)
                 case "wipe": self.dm.wipe()
                 case "export": self.dm.export(param)

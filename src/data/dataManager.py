@@ -116,13 +116,23 @@ class DataManager:
 
         return success(f"edited '{_parent}'" if _parent == data.parent else f"edited '{_parent}' (now '{data.parent}')")
 
-    def list(self) -> None:
+    def list(self, display: bool = True) -> list[str]:
         if self.BINPATH is None: raise LpmError("could not find home path", 1)
 
         with open(self.BINPATH, "rb") as lpmBin:
             parents = [str(self.decrypt(l).split(b"::")[0])[2:-1] for l in lpmBin.readlines()]
-            if len(parents) > 0: [print(f"{Ansi.style.LIGHT}•{Ansi.special.RESET} {p}") for p in parents]
-            else: raise LpmError("no data found", 1)
+            if len(parents) > 0:
+                if display: [print(f"{Ansi.style.LIGHT}•{Ansi.special.RESET} {p}") for p in parents]
+                return parents
+
+            raise LpmError("no data found", 1)
+
+    def search(self, query: str | None) -> ...:
+        if query is None: raise LpmError("missing argument 'query'", 1)
+        results = [p for p in self.list(False) if query in p]
+
+        if len(results) < 1: raise LpmError("no results found", 1)
+        [print(f"{Ansi.style.LIGHT}•{Ansi.special.RESET} {r}") for r in results]
 
     def rm(self, _parent: str | None) -> None:
         if self.BINPATH is None: raise LpmError("could not find home path", 1)
