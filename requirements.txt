@@ -1,1 +1,2 @@
-pyinstaller == 5.5
+cx_Freeze==6.12.0
+pyinstaller==5.5

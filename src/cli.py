@@ -25,24 +25,27 @@ class Cli:
     """Handles the command-line side of LPM."""
 
     args: list[str]
-    dm = DataManager()
+    dm: DataManager
     help = "\n".join([
-        "Usage: lpm --flag | command [args]",
+        "Usage: lpm --flag | command [arg]",
         "Commands:",
         "╭─ new",
-        "⏐  get",
-        "⏐  edit",
+        "⏐  get <parent>",
+        "⏐  edit <parent>",
         "⏐  list",
-        "⏐  rm",
+        "⏐  rm <parent>",
         "⏐  wipe",
-        "⏐  export",
-        "╰─ gen",
+        "⏐  export [decrypted]",
+        "⏐  gen <len>",
+        "╰─ setup",
         "Flags:",
         "╭─ --v",
         "╰─ --h",
     ])
 
-    def __init__(self, args: list[str]) -> None: self.args = args
+    def __init__(self, _args: list[str]) -> None:
+        self.args = _args
+        self.dm = DataManager(_args[1] if len(_args) > 1 else None)
 
     def gen_password(self, _length: str | None) -> str:
         if _length is None: raise LpmError("missing argument 'length'", 1)
@@ -53,7 +56,7 @@ class Cli:
             except: continue
 
         if length is None: raise LpmError("password length must be an integer", 1)
-        elif length >= 1000: warn("This may take longer than usual...")
+        elif length >= 1000: warn("This may take longer than usual..")
 
         pw, chars = "", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]};:'\",<.>/?|"
         for _ in range(length): pw += chars[randint(0, len(chars)-1)]
@@ -83,9 +86,9 @@ class Cli:
                 case "list": self.dm.list()
                 case "rm": self.dm.rm(param)
                 case "wipe": self.dm.wipe()
-                case "export": self.dm.export(bool(param))
-
+                case "export": self.dm.export(param)
                 case "gen": success(self.gen_password(param))
+                case "setup": ...
 
                 case None: print(self.help)
                 case cmd: raise LpmError(f"unknown command: '{cmd}'", 0)
