@@ -59,9 +59,8 @@ class Cli:
         if length is None: raise LpmError("password length must be an integer", 1)
         elif length >= 1000: warn("This may take longer than usual..")
 
-        pw, chars = "", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]};:'\",<.>/?|"
-        for _ in range(length): pw += chars[randint(0, len(chars)-1)]
-        return pw
+        *chars, = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]};:'\",<.>/?|"
+        return ''.join([chars[randint(0, len(chars)-1)] for _ in range(length)])
 
     def process_args(self) -> None:
         command = self.args[1] if len(self.args) > 1 else None

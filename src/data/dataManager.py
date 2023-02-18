@@ -121,17 +121,22 @@ class DataManager:
 
         with open(self.BINPATH, "rb") as lpmBin:
             parents = [str(self.decrypt(l).split(b"::")[0])[2:-1] for l in lpmBin.readlines()]
+
             if len(parents) > 0:
-                if display: [print(f"{Ansi.style.LIGHT}•{Ansi.special.RESET} {p}") for p in parents]
+                if display:
+                    print("%i found:" %len(parents))
+                    [print(f"{Ansi.style.LIGHT}•{Ansi.special.RESET} {p}") for p in parents]
+
                 return parents
 
             raise LpmError("no data found", 1)
 
     def search(self, query: str | None) -> ...:
         if query is None: raise LpmError("missing argument 'query'", 1)
-        results = [p for p in self.list(False) if query in p]
+        results = [p for p in self.list(False) if query.lower() in p.lower()]
 
         if len(results) < 1: raise LpmError("no results found", 1)
+        print("%i results found:" %len(results))
         [print(f"{Ansi.style.LIGHT}•{Ansi.special.RESET} {r}") for r in results]
 
     def rm(self, _parent: str | None) -> None:
