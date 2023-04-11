@@ -7,10 +7,7 @@
 			"pythonArgs": [
 				"-B"
 			],
-			"args": [
-				"search",
-				"g"
-			],
+			"args": [],
 			"program": "src/main.py",
 			"console": "integratedTerminal",
 			"justMyCode": true
