@@ -26,27 +26,29 @@ class Cli:
 
     args: list[str]
     dm: DataManager
-    help = "\n".join([
-        "Usage: lpm --flag | command [arg]",
-        "Commands:",
-        "╭─ new",
-        "⏐  get <parent>",
-        "⏐  edit <parent>",
-        "⏐  list",
-        "⏐  search <parent>",
-        "⏐  rm <parent>",
-        "⏐  wipe",
-        "⏐  export [decrypted]",
-        "⏐  gen <len>",
-        "╰─ setup",
-        "Flags:",
-        "╭─ --v",
-        "╰─ --h",
-    ])
 
     def __init__(self, _args: list[str]) -> None:
         self.args = _args
         self.dm = DataManager(_args[1] if len(_args) > 1 else None)
+
+    def display_help(self):
+        print(*[
+            "Usage: lpm --flag | command [arg]\n",
+            "Commands:\n",
+            "╭─ new\n",
+            "⏐  get <parent>\n",
+            "⏐  edit <parent>\n",
+            "⏐  list\n",
+            "⏐  search <parent>\n",
+            "⏐  rm <parent>\n",
+            "⏐  wipe\n",
+            "⏐  export [decrypted]\n",
+            "⏐  gen <len>\n",
+            "╰─ setup\n",
+            "Flags:\n",
+            "╭─ --v\n",
+            "╰─ --h\n",
+        ])
 
     def gen_password(self, _length: str | None) -> str:
         if _length is None: raise LpmError("missing argument 'length'", 1)
@@ -69,7 +71,7 @@ class Cli:
         if flag is not None and len(flag) > 2:
             match flag[2]:
                 case "v" | "version": print("v0.0.1")
-                case "h" | "help": print(self.help)
+                case "h" | "help": self.display_help()
                 case _: raise LpmError(f"unknown flag: '{flag}'", 1)
 
         else:
@@ -90,6 +92,5 @@ class Cli:
                 case "export": self.dm.export(param)
                 case "gen": success(self.gen_password(param))
                 case "setup": ...
-
-                case None: print(self.help)
+                case None: self.display_help()
                 case cmd: raise LpmError(f"unknown command: '{cmd}'", 0)

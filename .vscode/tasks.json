@@ -4,7 +4,7 @@
 		{
 			"label": "Compile",
 			"type": "shell",
-			"command": "make",
+			"command": "pyinstaller --onefile --distpath bin --name lpm src/main.py",
 			"group": {
 				"kind": "build",
 				"isDefault": true
