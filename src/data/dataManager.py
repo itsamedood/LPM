@@ -18,6 +18,7 @@
 from os import getenv, system, path
 from sys import platform, exit
 from out import Ansi, LpmError, notify, success
+from getpass import GetPassWarning, getpass
 from cryptography.fernet import Fernet
 from data.key import Key
 from data.data import Data
@@ -65,11 +66,12 @@ class DataManager:
             parent = input(f"{Ansi.text.GREEN}App or site this data is for{Ansi.special.RESET}: ")
             email = input(f"{Ansi.text.GREEN}Email{Ansi.special.RESET}: ")
             username = input(f"{Ansi.text.GREEN}Username{Ansi.special.RESET}: ")
-            password = input(f"{Ansi.text.GREEN}Password{Ansi.special.RESET}: ")
+            password = getpass(f"{Ansi.text.GREEN}Password (hidden){Ansi.special.RESET}: ")
 
             return Data(parent, email, username, password)
 
         except (EOFError, KeyboardInterrupt): print(""); raise LpmError("cancelled", 1)
+        except GetPassWarning: raise LpmError("failed to disable echo", 1)
 
     def encrypt(self, data: bytes) -> bytes: return self.fernet.encrypt(data)
     def decrypt(self, data: bytes) -> bytes: return self.fernet.decrypt(data)
