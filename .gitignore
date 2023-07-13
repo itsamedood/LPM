@@ -1,8 +1,10 @@
 /.idea
+/bin
 /build
 /export
 /node_modules
-/out
+
 # 👇 For now ;)
 /scripts
 *.DS_Store
+*.spec
