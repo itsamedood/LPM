@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
-from os import getenv
-from random import randint
 from data.dataManager import DataManager
 from out import LpmError, success, warn
+from paths import Paths
+from random import randint
 
 
 class Cli:
@@ -26,27 +26,28 @@ class Cli:
 
     args: list[str]
     dm: DataManager
-    help = "\n".join([
-        "Usage: lpm --flag | command [arg]",
-        "Commands:",
-        "╭─ new",
-        "⏐  get <parent>",
-        "⏐  edit <parent>",
-        "⏐  list",
-        "⏐  search <parent>",
-        "⏐  rm <parent>",
-        "⏐  wipe",
-        "⏐  export [decrypted]",
-        "⏐  gen <len>",
-        "╰─ setup",
-        "Flags:",
-        "╭─ --v",
-        "╰─ --h",
-    ])
 
     def __init__(self, _args: list[str]) -> None:
         self.args = _args
-        self.dm = DataManager(_args[1] if len(_args) > 1 else None)
+        self.dm = DataManager(_args[1] if len(_args) > 1 else None, Paths())
+
+    def display_help(self): print('\n'.join([
+            "Usage: lpm --flag | command [arg]",
+            "Commands:",
+            "╭─ new",
+            "⏐  get <parent>",
+            "⏐  edit <parent>",
+            "⏐  list",
+            "⏐  search <parent>",
+            "⏐  rm <parent>",
+            "⏐  wipe",
+            "⏐  export [decrypted]",
+            "⏐  gen <len>",
+            "╰─ setup",
+            "Flags:",
+            "╭─ --v",
+            "╰─ --h",
+        ]))
 
     def gen_password(self, _length: str | None) -> str:
         if _length is None: raise LpmError("missing argument 'length'", 1)
@@ -55,6 +56,11 @@ class Cli:
         while _length.isdigit():  # All because of what I swear must be a Python3.10+ bug...
             try: length = int(_length); break
             except: continue
+
+        # global length
+
+        # try: length = int(_length)
+        # except: length = None
 
         if length is None: raise LpmError("password length must be an integer", 1)
         elif length >= 1000: warn("This may take longer than usual..")
@@ -69,15 +75,11 @@ class Cli:
         if flag is not None and len(flag) > 2:
             match flag[2]:
                 case "v" | "version": print("v0.0.1")
-                case "h" | "help": print(self.help)
+                case "h" | "help": self.display_help()
                 case _: raise LpmError(f"unknown flag: '{flag}'", 1)
 
         else:
-            HOME = getenv("HOME")
-            PATH = f"{HOME}/.lpm/lpm.bin" if HOME is not None else None
             param = self.args[2] if len(self.args) > 2 else None
-
-            if PATH is None: raise LpmError("could not find home path", 1)
 
             match command:
                 case "new": self.dm.new(self.dm.get_data())
@@ -91,5 +93,5 @@ class Cli:
                 case "gen": success(self.gen_password(param))
                 case "setup": ...
 
-                case None: print(self.help)
+                case None: self.display_help()
                 case cmd: raise LpmError(f"unknown command: '{cmd}'", 0)
