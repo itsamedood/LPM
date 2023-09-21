@@ -2,13 +2,31 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Compile",
+			"label": "Compile - both",
 			"type": "shell",
-			"command": "pyinstaller --onefile --distpath bin --name lpm src/main.py",
+			"command": "make",
 			"group": {
 				"kind": "build",
 				"isDefault": true
 			}
-		}
+		},
+		{
+			"label": "Compile - cmd",
+			"type": "shell",
+			"command": "make cmd",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "Compile - gui",
+			"type": "shell",
+			"command": "make gui",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
 	]
 }

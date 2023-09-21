@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
-from os import getenv, system, path
+from os import mkdir, system, path
+from paths import Paths
 from sys import platform, exit
 from out import Ansi, LpmError, notify, success
 from cryptography.fernet import Fernet
@@ -35,23 +36,15 @@ class DataManager:
     fernet: Fernet
     param: str | None
 
-    HOME    = getenv("HOME") if platform == "linux" or "darwin" else f'{getenv("HOMEDRIVE")}{getenv("HOMEPATH")}'
-    BASPATH = f"{HOME}/.lpm" if HOME is not None else None
-    BINPATH = f"{BASPATH}/lpm.bin" if HOME is not None else None  # Path to file where all data is stored.
-    KEYPATH = f"{BASPATH}/.key" if HOME is not None else None  # Path to where your encryption key is stored.
+    def __init__(self, _param: str | None, _paths: Paths) -> None:
+        self.param, self.paths = _param, _paths
 
-    def __init__(self, _param: str | None) -> None:
-        self.param = _param
         if _param is not None and _param == "setup": self.setup()
         else:
-            # Probably won't ever happen.
-            if self.BASPATH is None or self.BINPATH is None or self.KEYPATH is None: raise LpmError("could not find home path", 1)
-            if not path.exists(self.BASPATH): raise LpmError(f"'{self.BASPATH}' does not exist. run `lpm setup`", 1)
-            if not path.exists(self.KEYPATH): raise LpmError(f"'{self.KEYPATH}' does not exist. run `lpm setup`", 1)
-            if not path.exists(self.BINPATH): raise LpmError(f"'{self.BINPATH}' does not exist. run `lpm setup`", 1)
+            _paths.paths_exist()  # Check if paths exist.
 
             # Getting the key.
-            with open(self.KEYPATH, "rb") as rdotkey:
+            with open(self.paths.KEYPATH, "rb") as rdotkey:
                 lines = rdotkey.readlines()
                 if len(lines) < 1: Key(None)
 
@@ -77,16 +70,16 @@ class DataManager:
     def new(self, data: Data) -> None:
         """Encrypts the data & stores it."""
 
-        if self.BINPATH is None: raise LpmError("could not find home path", 1)
+        # if self.BINPATH is None: raise LpmError("could not find home path", 1)
 
-        with open(self.BINPATH, "ab") as lpmBin: lpmBin.write(self.encrypt(bytes(f"{data.formatted}", encoding="ascii")) + b"\n")
+        with open(self.paths.BINPATH, "ab") as lpmBin: lpmBin.write(self.encrypt(bytes(f"{data.formatted}", encoding="ascii")) + b"\n")
         return success(f"'{data.as_tuple[0]}' was saved")
 
     def get(self, _parent: str | None) -> Data:
-        if self.BINPATH is None: raise LpmError("could not find home path", 1)
+        # if self.BINPATH is None: raise LpmError("could not find home path", 1)
         if _parent is None: raise LpmError("missing argument 'parent'", 1)
 
-        with open(self.BINPATH, "rb") as lpmBin:
+        with open(self.paths.BINPATH, "rb") as lpmBin:
             lines = [self.decrypt(eline) for eline in lpmBin.readlines()]
 
             for line in lines:
@@ -96,13 +89,13 @@ class DataManager:
             raise LpmError(f"'{_parent}' does not exist", 1)
 
     def edit(self, _parent: str | None) -> None:
-        if self.BINPATH is None: raise LpmError("could not find home path", 1)
+        # if self.BINPATH is None: raise LpmError("could not find home path", 1)
         if _parent is None: raise LpmError("missing argument 'parent'", 1)
 
         self.get(_parent)  # Verifies this data exists.
         data = self.get_data()
 
-        with open(self.BINPATH, "rb") as rlpmBin:
+        with open(self.paths.BINPATH, "rb") as rlpmBin:
             _lines = [self.decrypt(l) for l in rlpmBin.readlines()]
             lines: list[bytes] = []
 
@@ -110,14 +103,14 @@ class DataManager:
                 if str(line)[2:-1].split("::")[0] != _parent: lines.append(self.encrypt(line))
                 else: lines.append(self.encrypt(bytes(data.formatted, encoding="ascii")))
 
-            with open(self.BINPATH, "wb") as wlpmBin: [wlpmBin.write(line + b"\n") for line in lines]
+            with open(self.paths.BINPATH, "wb") as wlpmBin: [wlpmBin.write(line + b"\n") for line in lines]
 
         return success(f"edited '{_parent}'" if _parent == data.parent else f"edited '{_parent}' (now '{data.parent}')")
 
     def list(self, display: bool = True) -> list[str]:
-        if self.BINPATH is None: raise LpmError("could not find home path", 1)
+        # if self.BINPATH is None: raise LpmError("could not find home path", 1)
 
-        with open(self.BINPATH, "rb") as lpmBin:
+        with open(self.paths.BINPATH, "rb") as lpmBin:
             parents = [str(self.decrypt(l).split(b"::")[0])[2:-1] for l in lpmBin.readlines()]
 
             if len(parents) > 0:
@@ -138,39 +131,39 @@ class DataManager:
         [print(f"{Ansi.style.LIGHT}•{Ansi.special.RESET} {r}") for r in results]
 
     def rm(self, _parent: str | None) -> None:
-        if self.BINPATH is None: raise LpmError("could not find home path", 1)
+        # if self.BINPATH is None: raise LpmError("could not find home path", 1)
         if _parent is None: raise LpmError("missing argument 'parent'", 1)
 
         self.get(_parent)  # Verifies this data exists.
 
-        with open(self.BINPATH, "rb") as rlpmBin:
+        with open(self.paths.BINPATH, "rb") as rlpmBin:
             lines = [self.decrypt(eline) for eline in rlpmBin.readlines()]
             filtered_lines: list[bytes] = []
 
             for line in lines:
                 if str(line)[2:-1].split("::")[0] != _parent: filtered_lines.append(self.encrypt(line))
 
-            with open(self.BINPATH, "wb") as wlpmBin: [wlpmBin.write(fline + b"\n") for fline in filtered_lines]
+            with open(self.paths.BINPATH, "wb") as wlpmBin: [wlpmBin.write(fline + b"\n") for fline in filtered_lines]
 
         return success(f"'{_parent}' was removed")
 
     def wipe(self) -> None:
-        if self.BINPATH is None or self.KEYPATH is None: raise LpmError("could not find home path", 1)
+        # if self.BINPATH is None or self.KEYPATH is None: raise LpmError("could not find home path", 1)
 
-        with open(self.BINPATH, "rb") as lpmBin:
+        with open(self.paths.BINPATH, "rb") as lpmBin:
             if len(lpmBin.readlines()) > 0:
-                with open(self.KEYPATH, "wb") as wdotkey: wdotkey.write(b"")
-                with open(self.BINPATH, "wb") as wlpmBin: wlpmBin.write(b""); return success("wiped all data and key")
+                with open(self.paths.KEYPATH, "wb") as wdotkey: wdotkey.write(b"")
+                with open(self.paths.BINPATH, "wb") as wlpmBin: wlpmBin.write(b""); return success("wiped all data and key")
             else: raise LpmError("no data found", 1)
 
     def export(self, _decrypted: str | None) -> None:  # Will get around to using `_decrypted` eventually.
-        if self.BINPATH is None: raise LpmError("could not find home path", 1)
+        # if self.BINPATH is None: raise LpmError("could not find home path", 1)
         if not _decrypted == "dc": _decrypted = None  # `lpm export dc` exports all data, decrypted.
 
-        PATH = f"{self.HOME}/Desktop/export.txt"
+        PATH = f"{self.paths.HOME}/Desktop/export.txt"
         if path.exists(PATH): raise LpmError("data already exported", 1)
 
-        with open(self.BINPATH, "rb") as lpmBin:
+        with open(self.paths.BINPATH, "rb") as lpmBin:
             with open(PATH, "wb") as txt:
                 if _decrypted is not None: txt.write(b'\n'.join([self.decrypt(l) for l in lpmBin.readlines()]))
                 else: txt.write(lpmBin.read())
@@ -178,10 +171,19 @@ class DataManager:
         return success(f"exported all data to '{PATH}'")
 
     def setup(self) -> None:
-        # Probably won't ever happen.
-        if self.BASPATH is None or self.BINPATH is None or self.KEYPATH is None: raise LpmError("could not find home path", 1)
+        if not path.exists(self.paths.BASPATH): mkdir(self.paths.BASPATH); notify(f"'{self.paths.BASPATH}' created")
+        else: notify(f"'{self.paths.BASPATH}' exists")
 
-        if not path.exists(self.BASPATH): system(f"mkdir {self.BASPATH}"); notify(f"'{self.BASPATH}' created")
-        if not path.exists(self.KEYPATH): system(f"touch {self.KEYPATH}"); notify(f"'{self.KEYPATH}' created"); Key(None)
-        if not path.exists(self.BINPATH): system(f"touch {self.BINPATH}"); notify(f"'{self.BINPATH}' created")
+        if not path.exists(self.paths.KEYPATH):
+            self._touch(self.paths.KEYPATH); notify(f"'{self.paths.KEYPATH}' created"); Key(None)
+        else: notify(f"'{self.paths.KEYPATH}' exists")
+
+        if not path.exists(self.paths.BINPATH):
+            self._touch(self.paths.BINPATH); notify(f"'{self.paths.BINPATH}' created")
+        else: notify(f"'{self.paths.BINPATH}' exists")
+
         success("lpm is now ready"); exit(0)
+
+    def _touch(self, _file: str) -> None:
+        with open(_file, 'w') as file: ...
+        file.close()
