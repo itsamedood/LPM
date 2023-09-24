@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
-from os import mkdir, system, path
+from os import mkdir, path
 from paths import Paths
-from sys import platform, exit
+from sys import exit
 from out import Ansi, LpmError, notify, success
 from cryptography.fernet import Fernet
 from data.key import Key
@@ -64,19 +64,18 @@ class DataManager:
 
         except (EOFError, KeyboardInterrupt): print(""); raise LpmError("cancelled", 1)
 
-    def encrypt(self, data: bytes) -> bytes: return self.fernet.encrypt(data)
-    def decrypt(self, data: bytes) -> bytes: return self.fernet.decrypt(data)
+    def encrypt(self, _data: bytes) -> bytes: return self.fernet.encrypt(_data)
+    def decrypt(self, _data: bytes) -> bytes: return self.fernet.decrypt(_data)
 
     def new(self, data: Data) -> None:
         """Encrypts the data & stores it."""
 
-        # if self.BINPATH is None: raise LpmError("could not find home path", 1)
+        if self.exists(data.parent): raise LpmError("'%s' already exists" %data.parent, 1)
 
         with open(self.paths.BINPATH, "ab") as lpmBin: lpmBin.write(self.encrypt(bytes(f"{data.formatted}", encoding="ascii")) + b"\n")
         return success(f"'{data.as_tuple[0]}' was saved")
 
     def get(self, _parent: str | None) -> Data:
-        # if self.BINPATH is None: raise LpmError("could not find home path", 1)
         if _parent is None: raise LpmError("missing argument 'parent'", 1)
 
         with open(self.paths.BINPATH, "rb") as lpmBin:
@@ -88,8 +87,19 @@ class DataManager:
 
             raise LpmError(f"'{_parent}' does not exist", 1)
 
+    def exists(self, _parent: str | None) -> bool:
+        if _parent is None: return False
+
+        with open(self.paths.BINPATH, "rb") as lpmBin:
+            lines = [self.decrypt(eline) for eline in lpmBin.readlines()]
+
+            for line in lines:
+                line_split = str(line)[2:-1].split("::")
+                if line_split[0] == _parent: return True
+
+            return False
+
     def edit(self, _parent: str | None) -> None:
-        # if self.BINPATH is None: raise LpmError("could not find home path", 1)
         if _parent is None: raise LpmError("missing argument 'parent'", 1)
 
         self.get(_parent)  # Verifies this data exists.
@@ -107,14 +117,12 @@ class DataManager:
 
         return success(f"edited '{_parent}'" if _parent == data.parent else f"edited '{_parent}' (now '{data.parent}')")
 
-    def list(self, display: bool = True) -> list[str]:
-        # if self.BINPATH is None: raise LpmError("could not find home path", 1)
-
+    def list(self, _display: bool = True) -> list[str]:
         with open(self.paths.BINPATH, "rb") as lpmBin:
             parents = [str(self.decrypt(l).split(b"::")[0])[2:-1] for l in lpmBin.readlines()]
 
             if len(parents) > 0:
-                if display:
+                if _display:
                     print("%i found:" %len(parents))
                     [print(f"{Ansi.style.LIGHT}•{Ansi.special.RESET} {p}") for p in parents]
 
@@ -122,16 +130,15 @@ class DataManager:
 
             raise LpmError("no data found", 1)
 
-    def search(self, query: str | None) -> ...:
-        if query is None: raise LpmError("missing argument 'query'", 1)
-        results = [p for p in self.list(False) if query.lower() in p.lower()]
+    def search(self, _query: str | None) -> ...:
+        if _query is None: raise LpmError("missing argument 'query'", 1)
+        results = [p for p in self.list(False) if _query.lower() in p.lower()]
 
         if len(results) < 1: raise LpmError("no results found", 1)
         print("%i results found:" %len(results))
         [print(f"{Ansi.style.LIGHT}•{Ansi.special.RESET} {r}") for r in results]
 
     def rm(self, _parent: str | None) -> None:
-        # if self.BINPATH is None: raise LpmError("could not find home path", 1)
         if _parent is None: raise LpmError("missing argument 'parent'", 1)
 
         self.get(_parent)  # Verifies this data exists.

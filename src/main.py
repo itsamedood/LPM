@@ -16,11 +16,8 @@
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
 from cli import Cli
-from paths import Paths
 from sys import argv
 
 if __name__ == "__main__":
-    # paths = Paths()
-
     try: Cli(argv).process_args()
-    except KeyboardInterrupt: print("")
+    except KeyboardInterrupt: print('')

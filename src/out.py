@@ -77,9 +77,9 @@ class Ansi:
 class LpmError(BaseException):
     """Represents an error from LPM."""
 
-    def __init__(self, message: str, code: int) -> None: print(f"lpm: {Ansi.special.ERROR}error{Ansi.special.RESET}: {message}."); return exit(code)
+    def __init__(self, _message: str, _code: int) -> None: print(f"lpm: {Ansi.special.ERROR}error{Ansi.special.RESET}: {_message}."); return exit(_code)
 
 
-def success(message: str) -> None: return print(f"lpm: {Ansi.special.SUCCESS}success{Ansi.special.RESET}: {message}.")
-def warn(message: str) -> None: return print(f"lpm: {Ansi.special.WARNING}warn{Ansi.special.RESET}: {message}.")
-def notify(message: str) -> None: return print(f"lpm: {Ansi.style.LIGHT}note{Ansi.special.RESET}: {message}.")
+def success(_message: str) -> None: return print(f"lpm: {Ansi.special.SUCCESS}success{Ansi.special.RESET}: {_message}.")
+def warn(_message: str) -> None: return print(f"lpm: {Ansi.special.WARNING}warn{Ansi.special.RESET}: {_message}.")
+def notify(_message: str) -> None: return print(f"lpm: {Ansi.style.LIGHT}note{Ansi.special.RESET}: {_message}.")

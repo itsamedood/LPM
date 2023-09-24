@@ -11,6 +11,18 @@
 			"program": "src/main.py",
 			"console": "integratedTerminal",
 			"justMyCode": true
-		}
+		},
+		{
+			"name": "gui.py",
+			"type": "python",
+			"request": "launch",
+			"pythonArgs": [
+				"-B"
+			],
+			"args": [],
+			"program": "src/gui.py",
+			"console": "integratedTerminal",
+			"justMyCode": true
+		},
 	]
 }
