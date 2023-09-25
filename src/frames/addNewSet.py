@@ -1,12 +1,13 @@
 from data.data import Data
 from data.dataManager import DataManager
+from frames.baseFrame import BaseFrame
 from frames.other.error import Error
 from frames.other.websiteLink import WebsiteLink
 from paths import Paths
 from tkinter import Tk, Frame, Label, Entry, Button
 
 
-class AddNewSet:
+class AddNewSetFrame(BaseFrame):
     def __init__(self, _root: Tk, _paths: Paths) -> None:
         self.root, self.paths = _root, _paths
 

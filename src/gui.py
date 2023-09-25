@@ -1,4 +1,5 @@
-from frames.addNewSet import AddNewSet
+from frames.addNewSet import AddNewSetFrame
+from frames.select import SelectFrame
 from paths import Paths
 from tkinter import Tk, Frame
 
@@ -6,6 +7,7 @@ from tkinter import Tk, Frame
 class GUI:
     def __init__(self) -> None:
         self.paths = Paths()
+        self.current_frame = None
 
         # Create window.
         self.root = Tk()
@@ -13,17 +15,22 @@ class GUI:
         self.root.geometry("320x240")
         self.root.resizable(False, False)
 
-        # Build all frames.
-        add_new_set_frame = AddNewSet(self.root, self.paths).build_frame()
+        self.build_all_frames()
+        self.show_frame(self.select_frame.build_frame())
 
-        self.show_frame(add_new_set_frame)
+    def build_all_frames(self) -> None:
+        self.select_frame = SelectFrame(self.root, self.paths)
+        self.add_new_set_frame = AddNewSetFrame(self.root, self.paths)
 
     def show_frame(self, _frame: Frame) -> None:
+        if self.current_frame is not None:
+            self.current_frame.grid_remove()
+
         _frame.grid()
         _frame.tkraise()
+        self.current_frame = _frame
 
-    def run(self) -> None:
-        self.root.mainloop()
+    def run(self) -> None: self.root.mainloop()
 
 
 # Run.
