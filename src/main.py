@@ -19,5 +19,5 @@ from cli import Cli
 from sys import argv
 
 if __name__ == "__main__":
-    try: Cli(argv).process_args()
-    except KeyboardInterrupt: print('')
+  try: Cli(argv).process_args()
+  except KeyboardInterrupt: print('')

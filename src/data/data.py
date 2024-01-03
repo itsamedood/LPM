@@ -21,21 +21,21 @@ from out import Ansi
 
 @dataclass(frozen=True, init=True)
 class Data:
-    """Immutable LPM data."""
+  """Immutable LPM data."""
 
-    parent: str
-    email: str
-    username: str
-    password: str
+  parent: str
+  email: str
+  username: str
+  password: str
 
-    @property
-    def formatted(self) -> str: return f"{self.parent}::{self.email}::{self.username}::{self.password}"
+  @property
+  def formatted(self) -> str: return f"{self.parent}::{self.email}::{self.username}::{self.password}"
 
-    @property
-    def as_tuple(self) -> tuple[str, str, str, str]: return (self.parent, self.email, self.username, self.password)
+  @property
+  def as_tuple(self) -> tuple[str, str, str, str]: return (self.parent, self.email, self.username, self.password)
 
-    def print_out(self) -> None:
-        print(f"{Ansi.text.YELLOW}Parent{Ansi.special.RESET}: {Ansi.style.LIGHT}{self.parent}{Ansi.special.RESET}")
-        print(f"{Ansi.text.YELLOW}Email{Ansi.special.RESET}: {Ansi.style.LIGHT}{self.email}{Ansi.special.RESET}")
-        print(f"{Ansi.text.YELLOW}Username{Ansi.special.RESET}: {Ansi.style.LIGHT}{self.username}{Ansi.special.RESET}")
-        print(f"{Ansi.text.YELLOW}Password{Ansi.special.RESET}: {Ansi.style.LIGHT}{self.password}{Ansi.special.RESET}")
+  def print_out(self) -> None:
+    print(f"{Ansi.text.YELLOW}Parent{Ansi.special.RESET}: {Ansi.style.LIGHT}{self.parent}{Ansi.special.RESET}")
+    print(f"{Ansi.text.YELLOW}Email{Ansi.special.RESET}: {Ansi.style.LIGHT}{self.email}{Ansi.special.RESET}")
+    print(f"{Ansi.text.YELLOW}Username{Ansi.special.RESET}: {Ansi.style.LIGHT}{self.username}{Ansi.special.RESET}")
+    print(f"{Ansi.text.YELLOW}Password{Ansi.special.RESET}: {Ansi.style.LIGHT}{self.password}{Ansi.special.RESET}")
