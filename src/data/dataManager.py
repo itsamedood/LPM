@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
+
 from os import mkdir, path
 from paths import Paths
 from sys import exit

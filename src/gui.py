@@ -16,10 +16,30 @@
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from cli import Cli
-from sys import argv
+from paths import Paths
+from tkinter import Tk, messagebox
 
 
-if __name__ == "__main__":
-  try: Cli(argv).process_args()
-  except KeyboardInterrupt: print('')
+class GUI:
+  """ GUI for LPM. """
+
+  def __init__(self) -> None:
+    self.paths = Paths()
+    self.current_frame = None
+
+    # Create window.
+    self.root = Tk()
+    self.root.title("LPM - itsamedood")
+    self.root.geometry("320x240")
+    self.root.resizable(False, False)
+
+  def err(self, _title: str, _message: str) -> str:
+    """ Creates a small error window and displays `_message`. """
+
+    response = messagebox.showerror(_title, _message)
+    return response
+
+  def run(self) -> None: self.root.mainloop()
+
+
+GUI().run()
