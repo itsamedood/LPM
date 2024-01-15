@@ -7,4 +7,5 @@
 # 👇 For now ;)
 /scripts
 *.DS_Store
+*.kra
 *.spec
