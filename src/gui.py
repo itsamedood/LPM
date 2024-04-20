@@ -16,52 +16,63 @@
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from frames.actionSelect import ActionSelectFrame
+from frames.addnewset import AddNewSetFrame
+from frames.select import SelectFrame
 from paths import Paths
 from PIL import Image, ImageTk
 from tkinter import Frame, Tk, messagebox
 
 
-class GUI:
-  """ GUI for LPM. """
+class GUI(Tk):
+  """ Thank God for StackOverflow, I could not figure out frames for the life of me lmao """
 
-  def __init__(self) -> None:
+  def __init__(self, *args, **kwargs):
+    Tk.__init__(self, *args, **kwargs)
+    self.bind("<Key>", self.on_esc)
     self.paths = Paths()
-    self.current_frame: Frame | None = None
 
-    # Create window.
-    self.root = Tk()
-    self.root.title("LPM - https://itsamedood.github.io")
-    self.root.iconbitmap("assets/lpm-logo.ico")
-    self.root.iconphoto(True, ImageTk.PhotoImage(Image.open("assets/lpm-logo.ico")))
-    self.root.geometry("320x240")
-    self.root.resizable(False, False)
+    # Initializing main window.
+    self.title("LPM - https://itsamedood.github.io")
+    self.iconbitmap("assets/lpm-logo.ico")
+    self.iconphoto(True, ImageTk.PhotoImage(Image.open("assets/lpm-logo.ico")))
+    self.geometry("320x240")
+    self.resizable(False, False)
 
-    self.init_all_frames()
-    self.show_frame(self.action_select_frame.build_frame())
+    # Initializing container where frames will be placed.
+    self.container = Frame(self)
+    self.container.pack(side="top", fill="both", expand=True)
+    self.container.grid_rowconfigure(0, weight=1)
+    self.container.grid_columnconfigure(0, weight=1)
 
-  def err(self, _title: str, _message: str) -> str:
+    self.frames: dict[str, Frame] = {}
+
+    # Add each new frame here.
+    for F in (
+      SelectFrame,
+      AddNewSetFrame,
+    ):
+      name = F.__name__
+      frame = F(self.container, self, self.paths)
+      self.frames[name] = frame
+
+      frame.grid(row=0, column=0, sticky="nsew")
+
+    self.show_frame("SelectFrame")  # Initial frame.
+
+  def show_frame(self, _frame_name: str) -> None:
+    try: self.frames[_frame_name].tkraise()
+    except KeyError: raise Exception("%s FRAME DOESN'T EXIST." %_frame_name)
+
+  def on_esc(self, _event):
+    if _event.keysym == "Escape": self.show_frame("SelectFrame")
+
+  def err(self, _title: str, _message: str, _close=False) -> str:
     """ Creates a small error window and displays `_message`. """
 
     response = messagebox.showerror(_title, _message)
+    if _close: self.destroy()
+
     return response
 
-  def init_all_frames(self) -> None:
-    """ Initializes all frames so they can be built and displayed when needed. """
 
-    self.action_select_frame = ActionSelectFrame(self.root, self.paths)
-
-  def show_frame(self, _frame: Frame) -> None:
-    """ Hide previous frame and tkraise `_frame` to display it. """
-
-    if self.current_frame is not None:
-      self.current_frame.grid_remove()
-
-    _frame.grid()
-    _frame.tkraise()
-    self.current_frame = _frame
-
-  def run(self) -> None: self.root.mainloop()
-
-
-GUI().run()
+if __name__ == "__main__": GUI().mainloop()

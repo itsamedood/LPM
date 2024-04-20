@@ -16,25 +16,15 @@
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from frames.baseFrame import BaseFrame
-from paths import Paths
-from tkinter import Frame, Label, Tk
+from tkinter import Frame, Label
+from webbrowser import open_new_tab
 
 
-class ActionSelectFrame(BaseFrame):
-  def __init__(self, _root: Tk, _paths: Paths) -> None:
-    self.root, self.paths = _root, _paths
+class WebsiteURL:
+  def __init__(self, _root: Frame) -> None:
+    self.root = _root
 
-  def build_frame(self) -> Frame:
-    self.frame = Frame(self.root)
-
-    self.root.columnconfigure(0, weight=1)
-    self.root.columnconfigure(1, weight=1)
-
-    # Create elements.
-    select_label = Label(self.root, text="Select an action.", pady=10)
-
-    # Add elements to window.
-    select_label.grid(row=0, column=0, columnspan=2)
-
-    return self.frame
+  def add_my_website_link(self, _row: int, _pady: int) -> None:
+    link_label = Label(self.root, text="itsamedood.github.io", fg="light blue", cursor="hand2")
+    link_label.grid(row=_row, column=0, columnspan=2, pady=_pady, sticky="se")
+    link_label.bind("<Button-1>", lambda _event: open_new_tab("https://itsamedood.github.io"))
