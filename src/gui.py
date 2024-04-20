@@ -16,15 +16,17 @@
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from frames.addnewset import AddNewSetFrame
+from cli import Cli
+from frames.newset import NewSetFrame
 from frames.select import SelectFrame
 from paths import Paths
 from PIL import Image, ImageTk
 from tkinter import Frame, Tk, messagebox
 
 
+# Thank God for StackOverflow, I could not figure out frames for the life of me lmao
 class GUI(Tk):
-  """ Thank God for StackOverflow, I could not figure out frames for the life of me lmao """
+  """ Handles the GUI side of LPM. """
 
   def __init__(self, *args, **kwargs):
     Tk.__init__(self, *args, **kwargs)
@@ -32,7 +34,7 @@ class GUI(Tk):
     self.paths = Paths()
 
     # Initializing main window.
-    self.title("LPM - https://itsamedood.github.io")
+    self.title("LPM (ESC to return to select)")
     self.iconbitmap("assets/lpm-logo.ico")
     self.iconphoto(True, ImageTk.PhotoImage(Image.open("assets/lpm-logo.ico")))
     self.geometry("320x240")
@@ -49,7 +51,7 @@ class GUI(Tk):
     # Add each new frame here.
     for F in (
       SelectFrame,
-      AddNewSetFrame,
+      NewSetFrame,
     ):
       name = F.__name__
       frame = F(self.container, self, self.paths)

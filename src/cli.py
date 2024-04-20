@@ -25,6 +25,7 @@ from random import randint
 class Cli:
   """Handles the command-line side of LPM."""
 
+  VERSION = "v0.0.1"
   args: list[str]
   dm: DataManager
 
@@ -44,6 +45,7 @@ class Cli:
       "⏐  wipe",
       "⏐  export [decrypted]",
       "⏐  gen <len>",
+      "⏐  help",
       "╰─ setup",
       "Flags:",
       "╭─ --v",
@@ -75,7 +77,7 @@ class Cli:
 
     if flag is not None and len(flag) > 2:
       match flag[2]:
-        case "v" | "version": print("v0.0.1")
+        case "v" | "version": print(self.VERSION)
         case "h" | "help": self.display_help()
         case _: raise LpmError(f"unknown flag: '{flag}'", 1)
 
@@ -92,6 +94,7 @@ class Cli:
         case "wipe": self.dm.wipe()
         case "export": self.dm.export(param)
         case "gen": success(self.gen_password(param))
+        case "help": self.display_help()
         case "setup": ...
 
         case None: self.display_help()

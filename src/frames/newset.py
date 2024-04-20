@@ -23,9 +23,10 @@ from paths import Paths
 from tkinter import Button, Entry, Frame, Label, Tk
 
 
-class AddNewSetFrame(Frame):
+class NewSetFrame(Frame):
   def __init__(self, _parent: Frame, _controller, _paths: Paths):
     Frame.__init__(self, _parent)
+    self.parent = _parent
     self.paths = _paths
     self.controller = _controller
 
