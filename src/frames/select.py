@@ -16,9 +16,8 @@
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from frames.elements.websiteurl import WebsiteURL
 from paths import Paths
-from tkinter import Button, Frame, Label, Tk
+from tkinter import Button, Frame, Label
 
 
 class SelectFrame(Frame):
@@ -57,4 +56,3 @@ class SelectFrame(Frame):
     export_button.grid(row=4, column=1)
     gen_button.grid(row=5, column=0)
     setup_button.grid(row=5, column=1)
-    WebsiteURL(self).add_my_website_link(6, 38)

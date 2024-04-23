@@ -18,7 +18,6 @@
 
 from data.data import Data
 from data.dataManager import DataManager
-from frames.elements.websiteurl import WebsiteURL
 from paths import Paths
 from tkinter import Button, Entry, Frame, Label, Tk
 
@@ -61,7 +60,6 @@ class NewSetFrame(Frame):
     password_label.grid(row=4, column=0)
     password_box.grid(row=4, column=1)
     add_button.grid(row=5, column=0)
-    WebsiteURL(self).add_my_website_link(6, 38)
 
   def handle_input(self) -> None:
     input_name: str = ''

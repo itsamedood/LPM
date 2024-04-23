@@ -16,7 +16,6 @@
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from cli import Cli
 from frames.newset import NewSetFrame
 from frames.select import SelectFrame
 from paths import Paths
@@ -55,14 +54,20 @@ class GUI(Tk):
     ):
       name = F.__name__
       frame = F(self.container, self, self.paths)
-      self.frames[name] = frame
-
       frame.grid(row=0, column=0, sticky="nsew")
+
+      self.frames[name] = frame
 
     self.show_frame("SelectFrame")  # Initial frame.
 
   def show_frame(self, _frame_name: str) -> None:
-    try: self.frames[_frame_name].tkraise()
+    try:
+      frame = self.frames[_frame_name]
+
+      # Change title and show frame.
+      self.title("LPM | itsamedood.github.io" if _frame_name == "SelectFrame" else "LPM | ESC to go back")
+      frame.tkraise()
+
     except KeyError: raise Exception("%s FRAME DOESN'T EXIST." %_frame_name)
 
   def on_esc(self, _event):
