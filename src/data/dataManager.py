@@ -15,13 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
+
+from data.data import Data
+from data.key import Key
+from cryptography.fernet import Fernet
 from os import mkdir, path
+from out import Ansi, LpmError, notify, success
 from paths import Paths
 from sys import exit
-from out import Ansi, LpmError, notify, success
-from cryptography.fernet import Fernet
-from data.key import Key
-from data.data import Data
 
 
 class DataManager:
@@ -76,6 +77,8 @@ class DataManager:
     return success(f"'{data.as_tuple[0]}' was saved")
 
   def get(self, _parent: str | None) -> Data:
+    """ Gets a data set from `_parent`. """
+
     if _parent is None: raise LpmError("missing argument 'parent'", 1)
 
     with open(self.paths.BINPATH, "rb") as lpmBin:
@@ -88,6 +91,7 @@ class DataManager:
       raise LpmError(f"'{_parent}' does not exist", 1)
 
   def exists(self, _parent: str | None) -> bool:
+    """ Checks to see if data set with `_parent` exists. """
     if _parent is None: return False
 
     with open(self.paths.BINPATH, "rb") as lpmBin:
@@ -100,6 +104,8 @@ class DataManager:
       return False
 
   def edit(self, _parent: str | None) -> None:
+    """ Edit an existing data set. """
+
     if _parent is None: raise LpmError("missing argument 'parent'", 1)
 
     self.get(_parent)  # Verifies this data exists.
@@ -118,6 +124,8 @@ class DataManager:
     return success(f"edited '{_parent}'" if _parent == data.parent else f"edited '{_parent}' (now '{data.parent}')")
 
   def list(self, _display: bool = True) -> list[str]:
+    """ Lists all data sets by parent (name). """
+
     with open(self.paths.BINPATH, "rb") as lpmBin:
       parents = [str(self.decrypt(l).split(b"::")[0])[2:-1] for l in lpmBin.readlines()]
 
@@ -130,15 +138,20 @@ class DataManager:
 
       raise LpmError("no data found", 1)
 
-  def search(self, _query: str | None) -> ...:
+  def search(self, _query: str | None) -> None:
+    """ Searches for a data set via name. """
+
     if _query is None: raise LpmError("missing argument 'query'", 1)
     results = [p for p in self.list(False) if _query.lower() in p.lower()]
 
     if len(results) < 1: raise LpmError("no results found", 1)
+
     print("%i results found:" %len(results))
     [print(f"{Ansi.style.LIGHT}•{Ansi.special.RESET} {r}") for r in results]
 
   def rm(self, _parent: str | None) -> None:
+    """ Removes a data set from `lpm.bin`. """
+
     if _parent is None: raise LpmError("missing argument 'parent'", 1)
 
     self.get(_parent)  # Verifies this data exists.
@@ -155,7 +168,7 @@ class DataManager:
     return success(f"'{_parent}' was removed")
 
   def wipe(self) -> None:
-    # if self.BINPATH is None or self.KEYPATH is None: raise LpmError("could not find home path", 1)
+    """ Deletes the key (`.key`) and all saved data in `lpm.bin`. """
 
     with open(self.paths.BINPATH, "rb") as lpmBin:
       if len(lpmBin.readlines()) > 0:
@@ -163,8 +176,14 @@ class DataManager:
         with open(self.paths.BINPATH, "wb") as wlpmBin: wlpmBin.write(b""); return success("wiped all data and key")
       else: raise LpmError("no data found", 1)
 
-  def export(self, _decrypted: str | None) -> None:  # Will get around to using `_decrypted` eventually.
-    # if self.BINPATH is None: raise LpmError("could not find home path", 1)
+  def export(self, _decrypted: str | None, _write=True) -> None:
+    """
+    Exports key and all saved data either:
+
+    - Encrypted.
+    - Decrypted (`lpm export dc`).
+    """
+
     if not _decrypted == "dc": _decrypted = None  # `lpm export dc` exports all data, decrypted.
 
     PATH = f"{self.paths.HOME}/Desktop/export.txt"
@@ -172,12 +191,26 @@ class DataManager:
 
     with open(self.paths.BINPATH, "rb") as lpmBin:
       with open(PATH, "wb") as txt:
-        if _decrypted is not None: txt.write(b'\n'.join([self.decrypt(l) for l in lpmBin.readlines()]))
-        else: txt.write(lpmBin.read())
+        if _decrypted is not None: txt.write(self.key.get() + b"\n\n" + b'\n'.join([self.decrypt(l) for l in lpmBin.readlines()]))
+        else: txt.write(self.key.get() + b"\n\n" + lpmBin.read())
 
     return success(f"exported all data to '{PATH}'")
 
+  def resecure(self):
+    """
+    Reencrypts everything with a brand new key.
+
+    It is recommended to backup both the old key and old encrypted data before doing this.
+    """
+
+    raise LpmError("Not implemented quite yet, sorry!", 1)
+    # with open(self.paths.KEYPATH, 'wb') as dotkey: dotkey.write(b'')
+    # Key(None)  # Generate new key.
+
+
   def setup(self) -> None:
+    """ Sets up LPM. """
+
     if not path.exists(self.paths.BASPATH): mkdir(self.paths.BASPATH); notify(f"'{self.paths.BASPATH}' created")
     else: notify(f"'{self.paths.BASPATH}' exists")
 

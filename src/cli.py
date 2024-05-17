@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
+
 from data.dataManager import DataManager
 from out import LpmError, success, warn
 from paths import Paths
@@ -40,9 +41,10 @@ class Cli:
       "⏐  list",
       "⏐  search <parent>",
       "⏐  rm <parent>",
-      "⏐  wipe",
-      "⏐  export [decrypted]",
       "⏐  gen <len>",
+      "⏐  resecure",
+      "⏐  wipe",
+      "⏐  export [dc]",
       "╰─ setup",
       "Flags:",
       "╭─ --v",
@@ -88,9 +90,10 @@ class Cli:
         case "list": self.dm.list()
         case "search": self.dm.search(param)
         case "rm": self.dm.rm(param)
+        case "gen": success(self.gen_password(param))
+        case "resecure": self.dm.resecure()
         case "wipe": self.dm.wipe()
         case "export": self.dm.export(param)
-        case "gen": success(self.gen_password(param))
         case "setup": ...
 
         case None: self.display_help()

@@ -1,0 +1,14 @@
+== KEY ==
+
+🟢 DONE
+🟡 WORKING ON
+🔴 TODO
+
+
+== TODO ==
+[🟢] Backendy stuff (actually saving passwords).
+[🟡] GUI (for people who are too scared or dumb to use the command line).
+[🟡] MongoDB integration (you can connect your own DB!).
+[🟡] Write shell script that installs and sets up LPM for you (because it's cool).
+[🟢] Add license to every python script in `src`.
+[🟡] Add `resecure` command.
