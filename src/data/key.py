@@ -31,20 +31,22 @@ class Key:
   as_bytes: bytes
   """ The actual key in `bytes` form. """
 
-  def __init__(self, _bytes: bytes | None) -> None: self.as_bytes = self.gen() if _bytes is None else _bytes
+  def __init__(self, _bytes: bytes | None) -> None: self.as_bytes = self.write(self.gen()) if _bytes is None else _bytes
 
   def gen(self) -> bytes:
     """Generates key & writes it to `.key`."""
 
+    self.as_bytes = Fernet.generate_key()
+    return self.as_bytes
+
+  def write(self, _key: bytes | None) -> bytes:
+    """ Writes `_key` to `.key`. """
+
     if self.KEYPATH is None: raise LpmError("could not find home path", 1)
-    key = Fernet.generate_key() + b"\n"
+    if _key is None: _key = self.as_bytes
 
-    with open(self.KEYPATH, "wb") as wdotkey:
-      carets = ""
-      for _ in key: carets += "^"
-
-      wdotkey.write(key + bytes(carets[:-1], encoding="ascii") + b" DO NOT CHANGE!!\n")
-    return key
+    with open(self.KEYPATH, "wb") as wdotkey: wdotkey.write(_key + b'\n' + b'^' * len(_key) + b" DO NOT CHANGE!!\n")
+    return _key
 
   def get(self) -> bytes:
     """ Gets key from `.key`. """

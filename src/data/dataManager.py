@@ -16,6 +16,7 @@
 # along with LPM.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from typing import Any
 from data.data import Data
 from data.key import Key
 from cryptography.fernet import Fernet
@@ -52,6 +53,15 @@ class DataManager:
         self.key = Key(lines[0][:-1])  # To get avoid encoding `\n`.
       self.fernet = Fernet(self.key.as_bytes)
 
+  def get_key(self) -> Key:
+    with open(self.paths.KEYPATH, "rb") as rdotkey:
+      lines = rdotkey.readlines()
+      return Key(lines[0][:-1])
+
+  def update_key(self) -> None:
+    self.key = self.get_key()
+    self.fernet = Fernet(self.key.as_bytes)
+
   def get_data(self) -> Data:
     """Gets data from the user to store."""
 
@@ -68,7 +78,7 @@ class DataManager:
   def encrypt(self, _data: bytes) -> bytes: return self.fernet.encrypt(_data)
   def decrypt(self, _data: bytes) -> bytes: return self.fernet.decrypt(_data)
 
-  def new(self, data: Data) -> None:
+  def  new(self, data: Data) -> None:
     """Encrypts the data & stores it."""
 
     if self.exists(data.parent): raise LpmError("'%s' already exists" %data.parent, 1)
@@ -123,7 +133,8 @@ class DataManager:
 
     return success(f"edited '{_parent}'" if _parent == data.parent else f"edited '{_parent}' (now '{data.parent}')")
 
-  def list(self, _display: bool = True) -> list[str]:
+  # Changed as to not conflict with built-in type `list`.
+  def list_sets(self, _display: bool = True) -> list[str]:
     """ Lists all data sets by parent (name). """
 
     with open(self.paths.BINPATH, "rb") as lpmBin:
@@ -142,7 +153,7 @@ class DataManager:
     """ Searches for a data set via name. """
 
     if _query is None: raise LpmError("missing argument 'query'", 1)
-    results = [p for p in self.list(False) if _query.lower() in p.lower()]
+    results = [p for p in self.list_sets(False) if _query.lower() in p.lower()]
 
     if len(results) < 1: raise LpmError("no results found", 1)
 
@@ -167,16 +178,48 @@ class DataManager:
 
     return success(f"'{_parent}' was removed")
 
-  def wipe(self) -> None:
+  def wipe(self, _print = True, _key = True, _data = True) -> None:
     """ Deletes the key (`.key`) and all saved data in `lpm.bin`. """
 
     with open(self.paths.BINPATH, "rb") as lpmBin:
       if len(lpmBin.readlines()) > 0:
-        with open(self.paths.KEYPATH, "wb") as wdotkey: wdotkey.write(b"")
-        with open(self.paths.BINPATH, "wb") as wlpmBin: wlpmBin.write(b""); return success("wiped all data and key")
+        if _key:
+          with open(self.paths.KEYPATH, "wb") as wdotkey: wdotkey.write(b'')
+        if _data:
+          with open(self.paths.BINPATH, "wb") as wlpmBin: wlpmBin.write(b'')
+
+        return success("wiped all data and key")
+
       else: raise LpmError("no data found", 1)
 
-  def export(self, _decrypted: str | None, _write=True) -> None:
+  def import_data(self, _exportdottxt: str | None) -> None:
+    if _exportdottxt is None: raise LpmError("cannot find %s." %_exportdottxt, 1)
+
+    if path.exists(_exportdottxt):
+      with open(_exportdottxt, 'rb') as rexportdottxt:
+        global key
+        global data
+        global dcd
+        lines = rexportdottxt.readlines()
+
+        key = lines[0][:-1]
+        dcd = bool(lines[1])  # (decrypted)
+        data = [l[:-1] for l in lines[2:] if len(l) > 0]
+
+        # print(key, dcd, data, sep='\n')
+
+        if not dcd:
+          with open(self.paths.KEYPATH, "wb"): Key(key).write(None)
+          with open(self.paths.BINPATH, "wb") as wlpmbin: wlpmbin.write(b'\n'.join(data))
+
+        else:
+          with open(self.paths.KEYPATH, "wb"): Key(key).write(None)
+          with open(self.paths.BINPATH, "wb") as wlpmbin:
+            wlpmbin.write(b'\n'.join([self.encrypt(l) for l in data]))
+
+    return success("successfully imported data")
+
+  def export(self, _decrypted: str | None, _write=True) -> tuple[bytes, bytes] | tuple[None, None]:
     """
     Exports key and all saved data either:
 
@@ -187,14 +230,18 @@ class DataManager:
     if not _decrypted == "dc": _decrypted = None  # `lpm export dc` exports all data, decrypted.
 
     PATH = f"{self.paths.HOME}/Desktop/export.txt"
-    if path.exists(PATH): raise LpmError("data already exported", 1)
+    if _write and path.exists(PATH): raise LpmError("data already exported", 1)
 
     with open(self.paths.BINPATH, "rb") as lpmBin:
-      with open(PATH, "wb") as txt:
-        if _decrypted is not None: txt.write(self.key.get() + b"\n\n" + b'\n'.join([self.decrypt(l) for l in lpmBin.readlines()]))
-        else: txt.write(self.key.get() + b"\n\n" + lpmBin.read())
+      if _write:
+        with open(PATH, "wb") as txt:
+          if _decrypted is not None: txt.write(self.key.get() + b"\n" + b"True" + b"\n\n" + b'\n'.join([self.decrypt(l) for l in lpmBin.readlines()]))
+          else: txt.write(self.key.get() + b"\n" + b"False" + b"\n\n" + lpmBin.read())
 
-    return success(f"exported all data to '{PATH}'")
+        success(f"exported all data to '{PATH}'")
+        return (None, None)
+
+      else: return (self.key.get(), b'\n'.join([self.decrypt(l) for l in lpmBin.readlines()]))
 
   def resecure(self):
     """
@@ -203,9 +250,21 @@ class DataManager:
     It is recommended to backup both the old key and old encrypted data before doing this.
     """
 
-    raise LpmError("Not implemented quite yet, sorry!", 1)
-    # with open(self.paths.KEYPATH, 'wb') as dotkey: dotkey.write(b'')
-    # Key(None)  # Generate new key.
+    oldkey, databytestr = self.export('dc', False)
+    if oldkey is None or databytestr is None: raise LpmError("key or data gotten for resecure is None", 1)
+
+    self.wipe(False)  # Delete key and all saved data.
+    Key(None)  # Generate new key.
+    self.update_key()
+
+    # Reecrypt data and write it to .lpm 1 at a time after clearing .lpm.
+    datasets = databytestr.split(b'\n')
+
+    for dataset in datasets:
+      datastr = str(dataset)[2:-1].split("::")
+
+      data = Data(datastr[0], datastr[1], datastr[2], datastr[3])
+      self.new(data)
 
 
   def setup(self) -> None:

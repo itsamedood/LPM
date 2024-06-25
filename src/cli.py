@@ -17,7 +17,7 @@
 
 
 from data.dataManager import DataManager
-from out import LpmError, success, warn
+from out import LpmError, Special
 from paths import Paths
 from random import randint
 
@@ -44,6 +44,7 @@ class Cli:
       "⏐  gen <len>",
       "⏐  resecure",
       "⏐  wipe",
+      "⏐  import <path-to-export.txt>",
       "⏐  export [dc]",
       "╰─ setup",
       "Flags:",
@@ -65,7 +66,7 @@ class Cli:
     # except: length = None
 
     if length is None: raise LpmError("password length must be an integer", 1)
-    elif length >= 1000: warn("This may take longer than usual..")
+    # No need for warning, since it should be obvious that generating a password of 1000+ characters could take a while.
 
     *chars, = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`~!@#$%^&*()-_=+[{]};:'\",<.>/?|"
     return ''.join([chars[randint(0, len(chars)-1)] for _ in range(length)])
@@ -87,12 +88,17 @@ class Cli:
         case "new": self.dm.new(self.dm.get_data())
         case "get": self.dm.get(param).print_out()
         case "edit": self.dm.edit(param)
-        case "list": self.dm.list()
+        case "list": self.dm.list_sets()
         case "search": self.dm.search(param)
         case "rm": self.dm.rm(param)
-        case "gen": success(self.gen_password(param))
+
+        # Little oversight, using `out.success` would always add a `.` to the end of the password,
+        # meaning, not only does EVERY password end with a `.`, the password is +1 in length!
+        case "gen": print(f"{Special.SUCCESS}{self.gen_password(param)}{Special.RESET}")
+
         case "resecure": self.dm.resecure()
         case "wipe": self.dm.wipe()
+        case "import": self.dm.import_data(param)
         case "export": self.dm.export(param)
         case "setup": ...
 
