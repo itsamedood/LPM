@@ -46,12 +46,14 @@ class DataManager:
       _paths.paths_exist()  # Check if paths exist.
 
       # Getting the key.
-      with open(self.paths.KEYPATH, "rb") as rdotkey:
-        lines = rdotkey.readlines()
-        if len(lines) < 1: Key(None)
+      try:
+        with open(self.paths.KEYPATH, "rb") as rdotkey:
+          lines = rdotkey.readlines()
+          if len(lines) < 1: Key(None)
 
-        self.key = Key(lines[0][:-1])  # To get avoid encoding `\n`.
-      self.fernet = Fernet(self.key.as_bytes)
+          self.key = Key(lines[0][:-1])  # To get avoid encoding `\n`.
+        self.fernet = Fernet(self.key.as_bytes)
+      except IndexError: raise LpmError("no key found. one has been generated", 1)
 
   def get_key(self) -> Key:
     with open(self.paths.KEYPATH, "rb") as rdotkey:

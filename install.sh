@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# I HAVEN'T EVEN TESTED THIS SCRIPT YET PLEASE DON'T ACTUALLY TRY USING IT YET
-# IF YOU DO AND IT DOESN'T WORK LMK AND DON'T COMPLAIN TYYYYY
-
 # Displays `$1` as an error message and exits with code 1.
 function raise() {
   printf "\033[0;31merror\033[0;0;0m: $1\n"; exit 1
@@ -25,17 +22,14 @@ function install_lpm_windows() {
   # printf "\033[0;32mSuccessfully installed LPM!\033[0;0;0m\n"
 }
 
+# Installs LPM on Linux & MacOS.
 function install_lpm_unix() {
-  # Steps:
-  # 1) mkdir `~/.lpm`
-  # 2) touch `~/.lpm/.key` (where the key for AES is stored)
-  # 3) touch `~/.lpm/lpm.bin` (where shit is stored)
-  # 4) Add path to LPM exec to PATH env var.
+  echo "* Sudo will be needed to move LPM executable to /usr/bin."
 
-  # mkdir ~/.lpm
-  # touch ~/.lpm/.key
-  # touch ~/.lpm/lpm.bin
-  # sudo mv ./.lpm ~/usr/.bin
+  mkdir -p ~/.lpm
+  touch ~/.lpm/.key
+  touch ~/.lpm/lpm.bin
+  sudo mv $PWD/lpm /usr/bin
 
   printf "\033[0;32mSuccessfully installed LPM!\033[0;0;0m\n"
 }
@@ -52,3 +46,4 @@ function install_lpm() {
 
 check_for_lpm
 install_lpm
+lpm # Run `lpm` to create a key since `.key` will be empty.
